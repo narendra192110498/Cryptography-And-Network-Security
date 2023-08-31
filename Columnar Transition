@@ -1,43 +1,65 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-void encrypt(char *plaintext, char *key) {
-    int keyLength = strlen(key);
-    int textLength = strlen(plaintext);
-    int columns = keyLength;
-    int rows = (textLength + columns - 1) / columns;
-    char **grid = (char **)malloc(rows * sizeof(char *));
-    for (int i = 0; i < rows; i++) {
-        grid[i] = (char *)malloc(columns * sizeof(char));
-    }
+
+
+void removeSpaces(char *str) {
     int count = 0;
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < columns; j++) {
-            if (count < textLength) {
-                grid[i][j] = plaintext[count];
-                count++;
+    for (int i = 0; str[i]; i++) {
+        if (str[i] != ' ') {
+            str[count++] = str[i];
+        }
+    }
+    str[count] = '\0';
+}
+
+
+void columnarEncrypt(char *plaintext, char *key) {
+    int keyLength = strlen(key);
+    int plaintextLength = strlen(plaintext);
+
+    
+    int numRows = (plaintextLength + keyLength - 1) / keyLength;
+
+    char matrix[numRows][keyLength];
+
+    
+    int index = 0;
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < keyLength; j++) {
+            if (index < plaintextLength) {
+                matrix[i][j] = plaintext[index++];
             } else {
-                grid[i][j] = ' ';
+                matrix[i][j] = 'X';  // Padding with 'X'
             }
         }
     }
-    for (int i = 0; i < columns; i++) {
-        int colIndex = key[i] - '0';
-        for (int j = 0; j < rows; j++) {
-            printf("%c", grid[j][colIndex]);
+
+
+    for (int i = 0; i < keyLength; i++) {
+        int col = key[i] - '0' - 1;
+        for (int j = 0; j < numRows; j++) {
+            printf("%c", matrix[j][col]);
         }
     }
-    for (int i = 0; i < rows; i++) {
-        free(grid[i]);
-    }
-    free(grid);
-}
-int main() {
-    char plaintext[] = "HELLOWORLD";
-    char key[] = "3124"; 
-    printf("Original Plaintext: %s\n", plaintext);
-    printf("Encrypted: ");
-    encrypt(plaintext, key);
     printf("\n");
+}
+
+int main() {
+    char plaintext[1000];
+    char key[100];
+
+    printf("Enter the plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    plaintext[strcspn(plaintext, "\n")] = '\0'; 
+
+    printf("Enter the key (permutation of numbers): ");
+    fgets(key, sizeof(key), stdin);
+    key[strcspn(key, "\n")] = '\0'; 
+
+    removeSpaces(plaintext);
+
+    printf("Encrypted message: ");
+    columnarEncrypt(plaintext, key);
+
     return 0;
 }
